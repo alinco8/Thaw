@@ -40,7 +40,7 @@ final class LayoutBarContainer: NSView {
     /// animate its next layout pass.
     ///
     /// After each layout pass, this value is reset to `true`.
-    var shouldAnimateNextLayoutPass = true
+    var shouldAnimateNextLayoutPass = false
 
     /// A Boolean value that indicates whether the container can
     /// set its arranged views.
