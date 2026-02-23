@@ -656,10 +656,24 @@ private struct EditNameButton: View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Text(String(localized: "Edit Name"))
+                    .padding(.leading, 5)
 
                 HStack(spacing: 0) {
                     Text("⌘")
-                    Text("+")
+                }
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .background {
+                    backgroundShape
+                        .fill(.regularMaterial)
+                        .brightness(0.25)
+                        .opacity(0.5)
+                }
+                .foregroundStyle(.secondary)
+
+                Text("+")
+
+                HStack(spacing: 0) {
                     Text("E")
                 }
                 .padding(.horizontal, 4)
@@ -728,7 +742,10 @@ private struct EditDiscardButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Text(String(localized: "Discard"))
+                Text(
+                    String(localized: "Discard")
+                )
+                .padding(.leading, 5)
 
                 Text("⎋")
                     .font(.system(size: 12))
