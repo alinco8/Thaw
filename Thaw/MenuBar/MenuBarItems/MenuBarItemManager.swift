@@ -343,6 +343,12 @@ final class MenuBarItemManager: ObservableObject {
         }
         return timestamp.duration(to: .now) <= duration
     }
+
+    /// Records that a move operation occurred outside of Thaw's own `move()` function
+    /// (e.g. the user cmd+dragged an item directly on the menu bar).
+    func recordExternalMoveOperation() {
+        lastMoveOperationTimestamp = .now
+    }
 }
 
 // MARK: - Item Cache
@@ -710,6 +716,11 @@ extension MenuBarItemManager {
 
             guard skipRecentMoveCheck || !lastMoveOperationOccurred(within: .seconds(1)) else {
                 MenuBarItemManager.diagLog.debug("Skipping menu bar item cache due to recent item movement")
+                return
+            }
+
+            guard !(appState?.isDraggingMenuBarItem ?? false) else {
+                MenuBarItemManager.diagLog.debug("Skipping menu bar item cache: user is cmd-dragging")
                 return
             }
 
