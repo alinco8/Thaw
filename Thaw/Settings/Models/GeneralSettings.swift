@@ -264,6 +264,26 @@ final class GeneralSettings: ObservableObject {
 
         cancellables = c
     }
+
+    /// Resets all settings to their default values.
+    func resetToDefaults() {
+        showIceIcon = true
+        iceIcon = .defaultIceIcon
+        lastCustomIceIcon = nil
+        customIceIconIsTemplate = false
+        useIceBar = false
+        useIceBarOnlyOnNotchedDisplay = false
+        iceBarLocation = .dynamic
+        iceBarLocationOnHotkey = false
+        showOnClick = true
+        showOnDoubleClick = true
+        showOnHover = false
+        showOnScroll = true
+        itemSpacingOffset = 0
+        autoRehide = true
+        rehideStrategy = .smart
+        rehideInterval = 15
+    }
 }
 
 // MARK: - RehideStrategy

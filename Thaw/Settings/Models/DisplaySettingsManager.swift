@@ -177,4 +177,9 @@ final class DisplaySettingsManager: ObservableObject {
             )
         }
     }
+
+    /// Resets all display configurations to their default values.
+    func resetToDefaults() {
+        configurations = [:]
+    }
 }

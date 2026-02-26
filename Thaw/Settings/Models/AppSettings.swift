@@ -35,6 +35,14 @@ final class AppSettings: ObservableObject {
         configureCancellables()
     }
 
+    /// Resets all settings to their default values.
+    func resetAllSettingsToDefaults() {
+        advanced.resetToDefaults()
+        general.resetToDefaults()
+        hotkeys.resetToDefaults()
+        displaySettings.resetToDefaults()
+    }
+
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
 

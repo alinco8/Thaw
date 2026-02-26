@@ -158,6 +158,20 @@ final class AdvancedSettings: ObservableObject {
 
         cancellables = c
     }
+
+    /// Resets all settings to their default values.
+    func resetToDefaults() {
+        enableAlwaysHiddenSection = false
+        showAllSectionsOnUserDrag = true
+        sectionDividerStyle = .noDivider
+        hideApplicationMenus = true
+        enableSecondaryContextMenu = true
+        showOnHoverDelay = 0.2
+        tooltipDelay = 0.5
+        showMenuBarTooltips = false
+        iconRefreshInterval = 0.2
+        enableDiagnosticLogging = false
+    }
 }
 
 // MARK: - SectionDividerStyle
