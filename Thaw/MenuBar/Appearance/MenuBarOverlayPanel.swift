@@ -519,7 +519,7 @@ final class MenuBarOverlayPanel: NSPanel {
         missionControlProbeWindow.close()
         super.close()
         #if DEBUG
-        diagLog.debug("Overlay panel closed. Active windows: \(NSApplication.shared.windows.count)")
+            diagLog.debug("Overlay panel closed. Active windows: \(NSApplication.shared.windows.count)")
         #endif
     }
 
