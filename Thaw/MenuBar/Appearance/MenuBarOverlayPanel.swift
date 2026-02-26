@@ -518,6 +518,9 @@ final class MenuBarOverlayPanel: NSPanel {
     override func close() {
         missionControlProbeWindow.close()
         super.close()
+        #if DEBUG
+        diagLog.debug("Overlay panel closed. Active windows: \(NSApplication.shared.windows.count)")
+        #endif
     }
 
     override func isAccessibilityElement() -> Bool {
