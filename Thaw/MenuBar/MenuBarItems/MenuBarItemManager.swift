@@ -3025,6 +3025,13 @@ extension MenuBarItemManager {
             "\($0.tag.namespace):\($0.tag.title)"
         })
 
+        // Count items per namespace to detect multi-icon apps
+        var itemsPerNamespace = [String: Int]()
+        for item in items where !item.isControlItem && item.isMovable && item.canBeHidden {
+            let ns = item.tag.namespace.description
+            itemsPerNamespace[ns, default: 0] += 1
+        }
+
         for item in items where !item.isControlItem && item.isMovable && item.canBeHidden {
             let tagString = "\(item.tag.namespace):\(item.tag.title)"
             guard !activelyShownTags.contains(tagString) else { continue }
@@ -3033,6 +3040,12 @@ extension MenuBarItemManager {
             // themselves next to each other, and restoring them causes shuffling.
             // Only restore the primary item (instanceIndex == 0).
             guard item.tag.instanceIndex == 0 else { continue }
+
+            // Skip apps with multiple icons (different names). Restoring causes errors.
+            let ns = item.tag.namespace.description
+            if let count = itemsPerNamespace[ns], count > 1 {
+                continue
+            }
 
             guard let currentSection = context.findSection(for: item) else { continue }
 
@@ -3164,11 +3177,22 @@ extension MenuBarItemManager {
             "\($0.tag.namespace):\($0.tag.title)"
         })
 
-        // Skip if any indexed items are present. Indexed items naturally position
-        // themselves next to their primary, and restoring order causes shuffling.
-        let hasIndexedItems = items.contains { $0.tag.instanceIndex > 0 }
-        guard !hasIndexedItems else {
-            MenuBarItemManager.diagLog.debug("restoreSavedItemOrder: skipping due to indexed items present")
+        // Count items per namespace to detect indexed and multi-icon apps
+        var itemsPerNamespace = [String: Int]()
+        var hasIndexedItems = false
+        for item in items where !item.isControlItem && item.isMovable && item.canBeHidden {
+            let ns = item.tag.namespace.description
+            itemsPerNamespace[ns, default: 0] += 1
+            if item.tag.instanceIndex > 0 {
+                hasIndexedItems = true
+            }
+        }
+
+        // Skip if indexed or multi-icon apps are present. These naturally position
+        // themselves, and restoring order causes shuffling.
+        let hasMultiIconApps = itemsPerNamespace.values.contains { $0 > 1 }
+        guard !hasIndexedItems && !hasMultiIconApps else {
+            MenuBarItemManager.diagLog.debug("restoreSavedItemOrder: skipping due to indexed/multi-icon items present")
             return false
         }
 
