@@ -1780,7 +1780,8 @@ extension MenuBarItemManager {
     private func postMoveEvents(
         item: MenuBarItem,
         destination: MoveDestination,
-        on displayID: CGDirectDisplayID
+        on displayID: CGDirectDisplayID,
+        warpCursorAfter: Bool = true
     ) async throws {
         do {
             try await eventSemaphore.wait(timeout: .seconds(5))
@@ -1793,7 +1794,10 @@ extension MenuBarItemManager {
 
         var itemOrigin = try await getCurrentBounds(for: item).origin
         let targetPoints = try await getTargetPoints(forMoving: item, to: destination, on: displayID)
-        let mouseLocation = try getMouseLocation()
+        // Capture mouse location only when this call owns the cursor warp.
+        // When called from move(), the outer move() handles the single warp
+        // at the end of all attempts so the cursor doesn't oscillate per attempt.
+        let mouseLocation: CGPoint? = warpCursorAfter ? try getMouseLocation() : nil
         let source = try getEventSource()
 
         try permitLocalEvents()
@@ -1821,7 +1825,9 @@ extension MenuBarItemManager {
         lastMoveOperationTimestamp = .now
         MouseHelpers.hideCursor()
         defer {
-            MouseHelpers.warpCursor(to: mouseLocation)
+            if let mouseLocation {
+                MouseHelpers.warpCursor(to: mouseLocation)
+            }
             MouseHelpers.showCursor()
             lastMoveOperationTimestamp = .now
             updateMoveOperationTimeout(timeout, for: item)
@@ -1920,8 +1926,14 @@ extension MenuBarItemManager {
             return
         }
 
+        // Capture the original cursor position once so the cursor is warped
+        // back to it a single time after all attempts, rather than after each
+        // individual attempt (which caused the cursor to oscillate many times
+        // during a layout reset when items required multiple attempts).
+        let mouseLocation = try getMouseLocation()
         MouseHelpers.hideCursor(watchdogTimeout: watchdogTimeout)
         defer {
+            MouseHelpers.warpCursor(to: mouseLocation)
             MouseHelpers.showCursor()
         }
 
@@ -1935,7 +1947,12 @@ extension MenuBarItemManager {
                     MenuBarItemManager.diagLog.debug("Item has correct position, finished with move")
                     return
                 }
-                try await postMoveEvents(item: item, destination: destination, on: resolvedDisplayID)
+                try await postMoveEvents(
+                    item: item,
+                    destination: destination,
+                    on: resolvedDisplayID,
+                    warpCursorAfter: false  // move() owns the single warp in its defer
+                )
                 // Verify the item actually reached the correct position.
                 if try await itemHasCorrectPosition(item: item, for: destination, on: resolvedDisplayID) {
                     MenuBarItemManager.diagLog.debug("Attempt \(n) succeeded and verified, finished with move")
@@ -3728,6 +3745,13 @@ extension MenuBarItemManager {
         await MainActor.run {
             appState.objectWillChange.send()
         }
+
+        // Clear any stale -1 sentinel that may have been written into
+        // menuBarHeightCache while the Menubar window was transiently
+        // unavailable during the reset. The item cache is fully rebuilt
+        // at this point, so the next mouse event will perform a fresh
+        // live lookup and cache the correct height.
+        NSScreen.invalidateMenuBarHeightCache()
 
         return failedMoves
     }
