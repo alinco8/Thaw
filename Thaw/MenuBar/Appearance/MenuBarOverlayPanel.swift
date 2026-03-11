@@ -83,6 +83,14 @@ final class MenuBarOverlayPanel: NSPanel {
         func cancelTask(for flag: UpdateFlag) {
             tasks.removeValue(forKey: flag)?.cancel()
         }
+
+        /// Cancels all tasks.
+        func cancelAllTasks() {
+            for task in tasks.values {
+                task.cancel()
+            }
+            tasks.removeAll()
+        }
     }
 
     /// A Boolean value that indicates whether the panel needs to be shown.
@@ -517,7 +525,27 @@ final class MenuBarOverlayPanel: NSPanel {
         }
     }
 
+    /// Workaround to release owningScreen reference since it's a let constant
+    /// We can't change owningScreen to var because it's used throughout the panel,
+    /// but we can clear other references to help with deallocation
+    private func cleanupReferences() {
+        // Clear all published state to release retained objects
+        desktopWallpaper = nil
+        applicationMenuFrame = nil
+        updateFlags.removeAll()
+        probeAtRestOrigin = nil
+    }
+
     override func close() {
+        // Cancel all pending update tasks to prevent memory leaks
+        updateTaskContext.cancelAllTasks()
+        // Clear publishers to release references
+        cancellables.removeAll()
+        // Clear captured wallpaper image and other state
+        cleanupReferences()
+        // Release content view
+        contentView = nil
+        // Close the mission control probe window
         missionControlProbeWindow.close()
         super.close()
         #if DEBUG

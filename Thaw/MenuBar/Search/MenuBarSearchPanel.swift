@@ -174,6 +174,10 @@ final class MenuBarSearchPanel: NSPanel {
         // setFrameAutosaveName("MenuBarSearchPanel") // Manual persistence is used instead.
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
     /// Called when the panel loses key focus.
     @objc private func panelResignedKey(_: Notification) {
         close()

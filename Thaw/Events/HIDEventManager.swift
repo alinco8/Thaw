@@ -309,6 +309,7 @@ final class HIDEventManager: ObservableObject {
             )
             .sink { [weak self] _ in
                 NSScreen.invalidateMenuBarHeightCache()
+                NSScreen.cleanupDisconnectedDisplayCaches()
                 self?.windowBoundsLock.withLock { $0.removeAll() }
             }
             .store(in: &c)
