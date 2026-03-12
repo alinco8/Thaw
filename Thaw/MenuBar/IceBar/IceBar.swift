@@ -601,7 +601,7 @@ private struct IceBarItemView: View {
                 .padding(.horizontal, 3)
                 .background {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill((isLightBackground ? Color.black : Color.white).opacity(isHovered ? 0.1 : 0))
+                        .fill((isLightBackground ? Color.black : Color.white).opacity(isHovered ? 0.15 : 0))
                         .padding(.vertical, 3)
                 }
                 .contentShape(Rectangle())
